@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
     List,
     ListItem,
     Card,
     Input,
-    ListItemSuffix,
     Button,
     Textarea,
     Dialog,
@@ -12,24 +11,139 @@ import {
     DialogBody,
     DialogFooter,
     Collapse,
+    Spinner,
 } from "@material-tailwind/react";
 import { Trash2, CirclePlus, CircleMinus } from "lucide-react";
+import { getMines, addEditMine, deleteMine } from "../store/reducers/mines";
+import { useDispatch, useSelector } from "react-redux";
+
+let deleteDialogResolve;
 
 export default function Mines() {
     const [dialogState, setDialogState] = useState(false);
     const [openNewInput, setOpenNewInput] = useState(false);
-    const [newMineName, setNewMineName] = useState("");
-    const [mineName, setMineName] = useState("");
-    const [mineDescription, setMineDescription] = useState("");
-    const [mineLocation, setMineLocation] = useState("");
-    const [mineBgImage, setMineBgImage] = useState("");
+    const [btnSpinner, setBtnSpinner] = useState();
 
-    const toggleOpenNewInput = () => setOpenNewInput((cur) => !cur);
-    const handleDialogState = () => setDialogState(!dialogState);
+    const [selectedMineId, setSelectedMineId] = useState(null);
 
-    const deleteMine = (mineId) => {
-        handleDialogState();
+    const [mineName_tr, setMineName_tr] = useState("");
+    const [mineName_en, setMineName_en] = useState("");
+    const [description_tr, setDescription_tr] = useState("");
+    const [description_en, setDescription_en] = useState("");
+    const [province, setProvince] = useState("");
+    const [district, setDistrict] = useState("");
+    const [location, setLocation] = useState(null);
+    const [bgImage, setBgImage] = useState(null);
+    const [images, setImages] = useState(null);
+
+    const dispatch = useDispatch();
+
+    const minesData = useSelector((state) => state.mineSlice.mines);
+
+    const toggleOpenNewInput = () =>
+        setOpenNewInput((cur) => {
+            setSelectedMineId(null);
+            if (!cur) {
+                setMineName_tr("");
+                setDescription_tr("");
+                setMineName_en("");
+                setDescription_en("");
+                setBgImage("");
+                setImages(null);
+                setProvince("");
+                setDistrict("");
+                setLocation(null);
+            }
+            return !cur;
+        });
+
+    const selectMine = (mineId) => {
+        setOpenNewInput(false);
+        const foundMine = minesData.find((item) => item.mineId == mineId);
+        setSelectedMineId(foundMine.mineId);
+
+        setMineName_tr(foundMine.mineName_tr);
+        setDescription_tr(foundMine.description_tr);
+
+        setMineName_en(foundMine.mineName_en);
+        setDescription_en(foundMine.description_en);
+
+        setProvince(foundMine.province);
+        setDistrict(foundMine.district);
     };
+
+    const deleteHandle = (mineId) => {
+        new Promise((resolve) => {
+            setDialogState(true);
+            deleteDialogResolve = resolve;
+        }).then((state) => {
+            if (state) {
+                dispatch(deleteMine(mineId)).then(({ payload }) => {
+                    if (payload.status) {
+                        console.log("deleted");
+                        setDialogState(false);
+                    } else {
+                        console.log("error delete");
+                        setDialogState(false);
+                    }
+                });
+            } else {
+                console.log("error delete");
+                setDialogState(false);
+            }
+        });
+    };
+
+    const save = () => {
+        setBtnSpinner(true);
+        const data = {
+            mineId: selectedMineId,
+            mineName_tr,
+            mineName_en,
+            description_tr,
+            description_en,
+            bgImage,
+            images,
+            province,
+            district,
+            location,
+        };
+        dispatch(addEditMine(data)).then(({ payload }) => {
+            setBtnSpinner(false);
+        });
+    };
+
+    useLayoutEffect(() => {
+        dispatch(getMines());
+    }, []);
+
+    function DeleteDialog() {
+        return (
+            <Dialog open={true} handler={() => setDialogState(false)} size="xs">
+                <DialogHeader>Dikkat</DialogHeader>
+                <DialogBody>
+                    Madeni silmek istediğinize emin misiniz?
+                </DialogBody>
+                <DialogFooter>
+                    <Button
+                        variant="text"
+                        color="gray"
+                        onClick={() => deleteDialogResolve(false)}
+                        className="mr-1"
+                    >
+                        <span>Hayır</span>
+                    </Button>
+                    <Button
+                        variant="text"
+                        color="red"
+                        onClick={() => deleteDialogResolve(true)}
+                    >
+                        <span>Evet</span>
+                    </Button>
+                </DialogFooter>
+            </Dialog>
+        );
+    }
 
     return (
         <div
@@ -39,118 +153,146 @@ export default function Mines() {
             {/* list */}
             <div className="w-full h-full row-span-6">
                 <Card className="w-full h-full border border-blue-gray-200 shadow-none">
-                    <div className="w-full flex item-center justify-center p-3">
-                        <span className="text-center font-semibold text-xl">
-                            Madenler
-                        </span>
+                    <div className="w-full h-full overflow-auto">
+                        <div className="w-full flex item-center justify-center p-3">
+                            <span className="text-center font-semibold text-xl">
+                                Madenler
+                            </span>
+                        </div>
+                        <hr />
+                        <div className="flex mx-4 mt-2 h-14 items-center justify-between">
+                            {openNewInput ? (
+                                <CircleMinus
+                                    className="cursor-pointer"
+                                    onClick={toggleOpenNewInput}
+                                />
+                            ) : (
+                                <CirclePlus
+                                    className="cursor-pointer"
+                                    onClick={toggleOpenNewInput}
+                                />
+                            )}
+                            <Collapse
+                                open={openNewInput}
+                                className="w-full flex items-center"
+                            >
+                                <div className="ml-3 flex-1 py-1">
+                                    <Input
+                                        label="Yeni Maden İsmi"
+                                        size="md"
+                                        value={mineName_tr}
+                                        onChange={(e) =>
+                                            setMineName_tr(e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </Collapse>
+                        </div>
+                        <List className="w-full h-full">
+                            {minesData.map((mine, index) => {
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <ListItem
+                                            selected={
+                                                selectedMineId == mine.mineId
+                                            }
+                                            onClick={() =>
+                                                selectMine(mine.mineId)
+                                            }
+                                        >
+                                            <span>{mine.mineName_tr}</span>
+                                        </ListItem>
+                                        <Trash2
+                                            size={18}
+                                            className="cursor-pointer mx-3"
+                                            onClick={() =>
+                                                deleteHandle(mine.mineId)
+                                            }
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </List>
                     </div>
-                    <hr />
-                    <div className="flex mx-3 h-14 items-center justify-between">
-                        {openNewInput ? (
-                            <CircleMinus
-                                className="cursor-pointer"
-                                onClick={toggleOpenNewInput}
-                            />
-                        ) : (
-                            <CirclePlus
-                                className="cursor-pointer"
-                                onClick={toggleOpenNewInput}
-                            />
-                        )}
-                        <Collapse
-                            open={openNewInput}
-                            className="w-full flex items-center"
-                        >
-                            <div className="ml-3 flex-1 py-1">
-                                <Input
-                                    label="Yeni Maden İsmi"
-                                    size="md"
-                                    value={newMineName}
-                                    onChange={(e) =>
-                                        setNewMineName(e.target.value)
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <List className="w-full">
-                        <ListItem>
-                            <span>Sart</span>
-                            <ListItemSuffix>
-                                <Trash2
-                                    size={18}
-                                    onClick={() => deleteMine(1)}
-                                />
-                            </ListItemSuffix>
-                        </ListItem>
-                        <ListItem>
-                            <span>Yeniköy</span>
-                            <ListItemSuffix>
-                                <Trash2
-                                    size={18}
-                                    onClick={() => deleteMine(1)}
-                                />
-                            </ListItemSuffix>
-                        </ListItem>
-                        <ListItem>
-                            <span>Küner</span>
-                            <ListItemSuffix>
-                                <Trash2
-                                    size={18}
-                                    onClick={() => deleteMine(1)}
-                                />
-                            </ListItemSuffix>
-                        </ListItem>
-                    </List>
                 </Card>
             </div>
 
             {/* Inputs (TR)*/}
             <div className="w-full h-full flex flex-col row-span-6">
-                <div className="mb-6">
+                <div className="mb-4">
                     <Input
                         label="Maden İsmi"
-                        value={openNewInput ? newMineName : mineName}
+                        value={mineName_tr}
                         onChange={(e) => {
-                            setMineName(e.target.value);
-                        }}
-                        disabled={openNewInput}
-                    />
-                </div>
-                <div className="flex flex-1">
-                    <Textarea label="Bilgi" className="min-h-52 flex flex-1" />
-                </div>
-            </div>
-
-            {/* Inputs (EN)*/}
-            <div className="w-full h-full flex flex-col row-span-6">
-                <div className="mb-6">
-                    <Input
-                        label="Mine Name"
-                        value={openNewInput ? newMineName : mineName}
-                        onChange={(e) => {
-                            setMineName(e.target.value);
+                            setMineName_tr(e.target.value);
                         }}
                         disabled={openNewInput}
                     />
                 </div>
                 <div className="flex flex-1">
                     <Textarea
+                        label="Bilgi"
+                        className="min-h-52 flex flex-1"
+                        onChange={(e) => {
+                            setDescription_tr(e.target.value);
+                        }}
+                        value={description_tr}
+                    />
+                </div>
+            </div>
+
+            {/* Inputs (EN)*/}
+            <div className="w-full h-full flex flex-col row-span-6">
+                <div className="mb-4">
+                    <Input
+                        label="Mine Name"
+                        value={mineName_en}
+                        onChange={(e) => {
+                            setMineName_en(e.target.value);
+                        }}
+                    />
+                </div>
+                <div className="flex flex-1">
+                    <Textarea
                         label="Description"
                         className="min-h-52 flex flex-1"
+                        onChange={(e) => {
+                            setDescription_en(e.target.value);
+                        }}
+                        value={description_en}
                     />
                 </div>
             </div>
 
             {/* Location */}
-            <div className="w-full row-span-11">
+            <div className="w-full flex flex-col row-span-11">
+                <Card className="p-3 mb-4">
+                    {" "}
+                    <div className="mb-4">
+                        <Input
+                            label="İl"
+                            value={province}
+                            onChange={(e) => setProvince(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="İlçe"
+                            value={district}
+                            onChange={(e) => setDistrict(e.target.value)}
+                        />
+                    </div>
+                </Card>
                 <Card className="w-full h-full flex items-center justify-center p-6">
                     Location
                 </Card>
             </div>
 
             {/* BgImage */}
-            <div class="col-span-3 row-span-6">
+            <div className="col-span-3 row-span-6">
                 <Card className="w-full h-full flex items-center justify-center p-6">
                     BgImage
                 </Card>
@@ -158,37 +300,22 @@ export default function Mines() {
 
             <div className="w-full">
                 <Button
-                    className="w-full bg-[#1e40af]"
-                    disabled={!mineName}
+                    className="w-full bg-[#1e40af] flex items-center justify-center"
+                    disabled={!mineName_tr}
                     size="sm"
+                    onClick={() => save()}
                 >
-                    {openNewInput ? "Ekle" : "Güncelle"}
+                    {btnSpinner ? (
+                        <Spinner />
+                    ) : openNewInput ? (
+                        "Ekle"
+                    ) : (
+                        "Güncelle"
+                    )}
                 </Button>
             </div>
 
-            <Dialog open={dialogState} handler={handleDialogState} size="xs">
-                <DialogHeader>Dikkat</DialogHeader>
-                <DialogBody>
-                    Madeni silmek istediğinize emin misiniz?
-                </DialogBody>
-                <DialogFooter>
-                    <Button
-                        variant="text"
-                        color="gray"
-                        onClick={handleDialogState}
-                        className="mr-1"
-                    >
-                        <span>Hayır</span>
-                    </Button>
-                    <Button
-                        variant="text"
-                        color="red"
-                        onClick={handleDialogState}
-                    >
-                        <span>Evet</span>
-                    </Button>
-                </DialogFooter>
-            </Dialog>
+            {dialogState && <DeleteDialog />}
         </div>
     );
 }

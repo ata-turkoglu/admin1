@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import productsReducer from "./reducers/products";
-import minesReducer from "./reducers/mines";
+import mineSlice from "./reducers/mines";
+import facilitySlice from "./reducers/facilities";
+import productSlice from "./reducers/products";
 
 export default configureStore({
     reducer: {
-        products: productsReducer,
-        mines: minesReducer,
+        mineSlice,
+        facilitySlice,
+        productSlice,
     },
 });
