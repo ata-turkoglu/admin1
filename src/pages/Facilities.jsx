@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect, useEffect, memo } from "react";
 import {
     Option,
     Select,
@@ -7,27 +7,189 @@ import {
     ListItem,
     Card,
     Input,
-    ListItemSuffix,
     Textarea,
     Button,
     Dialog,
     DialogHeader,
     DialogBody,
     DialogFooter,
+    Spinner,
 } from "@material-tailwind/react";
 import { Trash2, CirclePlus, CircleMinus } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    getFacilities,
+    addEditFacility,
+    deleteFacility,
+} from "../store/reducers/facilities";
+import { getMines } from "../store/reducers/mines";
+
+let deleteDialogResolve;
 
 export default function Facilities() {
     const [openNewInput, setOpenNewInput] = useState(false);
-    const [newFacilityName, setNewFacilityName] = useState("");
-    const [facilityName, setFacilityName] = useState("");
     const [dialogState, setDialogState] = useState(false);
-    const toggleOpenNewInput = () => setOpenNewInput((cur) => !cur);
-    const handleDialogState = () => setDialogState(!dialogState);
+    const [btnSpinner, setBtnSpinner] = useState();
 
-    const deleteFacility = (facilityId) => {
-        handleDialogState();
+    const [selectedFacilityId, setSelectedFacilityId] = useState(null);
+    const [selectedMine, setSelectedMine] = useState(0);
+    const [filteredMine, setFilteredMine] = useState({
+        mineId: null,
+        mineName_tr: "Hepsi",
+    });
+
+    const [facilityName_tr, setFacilityName_tr] = useState("");
+    const [facilityName_en, setFacilityName_en] = useState("");
+    const [description_tr, setDescription_tr] = useState("");
+    const [description_en, setDescription_en] = useState("");
+    const [bgImage, setBgImage] = useState(null);
+    const [images, setImages] = useState(null);
+
+    const dispatch = useDispatch();
+
+    const facilitiesData = useSelector(
+        (state) => state.facilitySlice.facilities
+    );
+    const [filteredFacilities, setFilteredFacilities] = useState(
+        ...facilitiesData
+    );
+    const minesData = useSelector((state) => state.mineSlice.mines);
+
+    const toggleOpenNewInput = () =>
+        setOpenNewInput((cur) => {
+            setSelectedFacilityId(null);
+            if (!cur) {
+                setFacilityName_tr("");
+                setFacilityName_en("");
+                setDescription_tr("");
+                setDescription_en("");
+                setBgImage("");
+                setImages(null);
+            }
+            return !cur;
+        });
+
+    const selectFacility = (facilityId) => {
+        setOpenNewInput(false);
+
+        const foundFacility = facilitiesData.find(
+            (item) => item.facilityId == facilityId
+        );
+
+        const foundMine = minesData.find(
+            (mine) => mine.mineId == foundFacility.mineId
+        );
+
+        setSelectedFacilityId(foundFacility.facilityId);
+        setSelectedMine(foundMine);
+
+        setFacilityName_tr(foundFacility.facilityName_tr);
+        setFacilityName_en(foundFacility.facilityName_en);
+
+        setDescription_tr(foundFacility.description_tr);
+        setDescription_en(foundFacility.description_en);
     };
+
+    const deleteHandle = (facilityId) => {
+        new Promise((resolve) => {
+            setDialogState(true);
+            deleteDialogResolve = resolve;
+        }).then((state) => {
+            if (state) {
+                dispatch(deleteFacility(facilityId)).then(({ payload }) => {
+                    if (payload.status) {
+                        console.log("deleted");
+                        setDialogState(false);
+                    } else {
+                        console.log("error delete");
+                        setDialogState(false);
+                    }
+                });
+            } else {
+                console.log("error delete");
+                setDialogState(false);
+            }
+        });
+    };
+
+    const save = () => {
+        setBtnSpinner(true);
+        const data = {
+            facilityId: selectedFacilityId,
+            mineId: selectedMine.mineId,
+            facilityName_tr,
+            facilityName_en,
+            description_tr,
+            description_en,
+            bgImage,
+            images,
+        };
+        dispatch(addEditFacility(data)).then(({ payload }) => {
+            setOpenNewInput(false);
+            setSelectedMine(0);
+            setFacilityName_tr("");
+            setFacilityName_en("");
+            setDescription_tr("");
+            setDescription_en("");
+            setBgImage(null);
+            setImages(null);
+            setBtnSpinner(false);
+        });
+    };
+
+    const validation = () => {
+        return (
+            selectedMine.mineId != null &&
+            facilityName_tr != "" &&
+            facilityName_en != null
+        );
+    };
+
+    useLayoutEffect(() => {
+        if (minesData.length <= 0) {
+            dispatch(getMines());
+        }
+        dispatch(getFacilities());
+    }, []);
+
+    useEffect(() => {
+        if (filteredMine.mineId == null) {
+            setFilteredFacilities(facilitiesData);
+        } else {
+            const filtered = facilitiesData.filter(
+                (item) => item.mineId == filteredMine.mineId
+            );
+            setFilteredFacilities(filtered);
+        }
+    }, [filteredMine]);
+
+    function DeleteDialog() {
+        return (
+            <Dialog open={true} handler={() => setDialogState(false)} size="xs">
+                <DialogHeader>Dikkat</DialogHeader>
+                <DialogBody>
+                    Fabrikayı silmek istediğinize emin misiniz?
+                </DialogBody>
+                <DialogFooter>
+                    <Button
+                        variant="text"
+                        color="gray"
+                        onClick={() => deleteDialogResolve(false)}
+                        className="mr-1"
+                    >
+                        <span>Hayır</span>
+                    </Button>
+                    <Button
+                        variant="text"
+                        color="red"
+                        onClick={() => deleteDialogResolve(true)}
+                    >
+                        <span>Evet</span>
+                    </Button>
+                </DialogFooter>
+            </Dialog>
+        );
+    }
 
     return (
         <div
@@ -40,10 +202,32 @@ export default function Facilities() {
                     <span>Fabrika Filtrele</span>
                     <hr className="mb-4 mt-2" />
                     <div className="w-full">
-                        <Select label="Madenler" size="md">
-                            <Option>Sart</Option>
-                            <Option>Yeniköy</Option>
-                            <Option>Küner</Option>
+                        <Select
+                            label="Madenler"
+                            size="md"
+                            value={filteredMine.mineName_tr}
+                        >
+                            <Option
+                                onClick={() =>
+                                    setFilteredMine({
+                                        mineId: null,
+                                        mineName_tr: "Hepsi",
+                                    })
+                                }
+                            >
+                                Hepsi
+                            </Option>
+                            ;
+                            {minesData.map((mine, index) => {
+                                return (
+                                    <Option
+                                        key={index}
+                                        onClick={() => setFilteredMine(mine)}
+                                    >
+                                        {mine.mineName_tr}
+                                    </Option>
+                                );
+                            })}
                         </Select>
                     </div>
                 </Card>
@@ -76,69 +260,48 @@ export default function Facilities() {
                                     <Input
                                         label="Yeni Fabrika İsmi"
                                         size="md"
-                                        value={newFacilityName}
+                                        value={facilityName_tr}
                                         onChange={(e) =>
-                                            setNewFacilityName(e.target.value)
+                                            setFacilityName_tr(e.target.value)
                                         }
                                     />
                                 </div>
                             </Collapse>
                         </div>
                         <List className="w-full h-full overflow-auto">
-                            <ListItem>
-                                <span>Altın</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
-                            <ListItem>
-                                <span>Agrega</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
-                            <ListItem>
-                                <span>Kuvars</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
-                            <ListItem>
-                                <span>Ağır Mineraller</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
-                            <ListItem>
-                                <span>Beton</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
-                            <ListItem>
-                                <span>Beton</span>
-                                <ListItemSuffix>
-                                    <Trash2
-                                        size={18}
-                                        onClick={() => deleteFacility(1)}
-                                    />
-                                </ListItemSuffix>
-                            </ListItem>
+                            {filteredFacilities.map((facility, index) => {
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <ListItem
+                                            selected={
+                                                selectedFacilityId ==
+                                                facility.facilityId
+                                            }
+                                            onClick={() =>
+                                                selectFacility(
+                                                    facility.facilityId
+                                                )
+                                            }
+                                        >
+                                            <span>
+                                                {facility.facilityName_tr}
+                                            </span>
+                                        </ListItem>
+                                        <Trash2
+                                            size={18}
+                                            className="cursor-pointer mx-3"
+                                            onClick={() =>
+                                                deleteHandle(
+                                                    facility.facilityId
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                );
+                            })}
                         </List>
                     </Card>
                 </div>
@@ -149,22 +312,36 @@ export default function Facilities() {
                 <div className="mb-6">
                     <Input
                         label="Fabrika İsmi"
-                        value={openNewInput ? newFacilityName : facilityName}
+                        value={facilityName_tr}
                         onChange={(e) => {
-                            setFacilityName(e.target.value);
+                            setFacilityName_tr(e.target.value);
                         }}
                         disabled={openNewInput}
                     />
                 </div>
                 <div className="w-full mb-6">
-                    <Select label="Maden">
-                        <Option>Sart</Option>
-                        <Option>Yeniköy</Option>
-                        <Option>Küner</Option>
+                    <Select label="Maden" value={selectedMine.mineName_tr}>
+                        {minesData.map((mine, index) => {
+                            return (
+                                <Option
+                                    key={index}
+                                    onClick={() => setSelectedMine(mine)}
+                                >
+                                    {mine.mineName_tr}
+                                </Option>
+                            );
+                        })}
                     </Select>
                 </div>
                 <div className="flex flex-1 mb-6">
-                    <Textarea label="Bilgi" className="min-h-52 flex flex-1" />
+                    <Textarea
+                        label="Bilgi"
+                        className="min-h-52 flex flex-1"
+                        onChange={(e) => {
+                            setDescription_tr(e.target.value);
+                        }}
+                        value={description_tr}
+                    />
                 </div>
             </div>
 
@@ -173,15 +350,18 @@ export default function Facilities() {
                 <div className="mb-6">
                     <Input
                         label="Facility Name"
-                        value={openNewInput ? newFacilityName : facilityName}
+                        value={facilityName_en}
                         onChange={(e) => {
-                            setFacilityName(e.target.value);
+                            setFacilityName_en(e.target.value);
                         }}
-                        disabled={openNewInput}
                     />
                 </div>
                 <div className="w-full mb-6">
-                    <Select label="Mine">
+                    <Select
+                        label="Mine"
+                        disabled
+                        value={selectedMine.mineName_tr}
+                    >
                         <Option>Sart</Option>
                         <Option>Yeniköy</Option>
                         <Option>Küner</Option>
@@ -191,6 +371,10 @@ export default function Facilities() {
                     <Textarea
                         label="Description"
                         className="min-h-52 flex flex-1"
+                        onChange={(e) => {
+                            setDescription_en(e.target.value);
+                        }}
+                        value={description_en}
                     />
                 </div>
             </div>
@@ -203,7 +387,7 @@ export default function Facilities() {
             </div>
 
             {/* BgImage */}
-            <div class="col-span-2 row-span-6">
+            <div className="col-span-2 row-span-6">
                 <Card className="w-full h-full flex items-center justify-center p-6">
                     BgImage
                 </Card>
@@ -211,37 +395,22 @@ export default function Facilities() {
 
             <div className="w-full">
                 <Button
-                    className="w-full bg-[#1e40af]"
-                    disabled={!facilityName}
+                    className="w-full bg-[#1e40af] flex items-center justify-center"
+                    disabled={!setFacilityName_tr || !validation()}
                     size="sm"
+                    onClick={() => save()}
                 >
-                    {openNewInput ? "Ekle" : "Güncelle"}
+                    {btnSpinner ? (
+                        <Spinner />
+                    ) : openNewInput ? (
+                        "Ekle"
+                    ) : (
+                        "Güncelle"
+                    )}
                 </Button>
             </div>
 
-            <Dialog open={dialogState} handler={handleDialogState} size="xs">
-                <DialogHeader>Dikkat</DialogHeader>
-                <DialogBody>
-                    Madeni silmek istediğinize emin misiniz?
-                </DialogBody>
-                <DialogFooter>
-                    <Button
-                        variant="text"
-                        color="gray"
-                        onClick={handleDialogState}
-                        className="mr-1"
-                    >
-                        <span>Hayır</span>
-                    </Button>
-                    <Button
-                        variant="text"
-                        color="red"
-                        onClick={handleDialogState}
-                    >
-                        <span>Evet</span>
-                    </Button>
-                </DialogFooter>
-            </Dialog>
+            {dialogState && <DeleteDialog />}
         </div>
     );
 }
