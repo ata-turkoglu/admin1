@@ -34,6 +34,8 @@ export default function Products() {
     const [btnSpinner, setBtnSpinner] = useState();
     const [newTechnicalTr, setNewTechnicalTr] = useState(false);
     const [newTechnicalEn, setNewTechnicalEn] = useState(false);
+    const [newAreasTr, setNewAreasTr] = useState(false);
+    const [newAreasEn, setNewAreasEn] = useState(false);
 
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [selectedMine, setSelectedMine] = useState(0);
@@ -51,8 +53,8 @@ export default function Products() {
     const [productName_en, setProductName_en] = useState("");
     const [description_tr, setDescription_tr] = useState("");
     const [description_en, setDescription_en] = useState("");
-    const [areasOfUsage_tr, setAreasOfUsage_tr] = useState(null);
-    const [areasOfUsage_en, setAreasOfUsage_en] = useState(null);
+    const [areasOfUsage_tr, setAreasOfUsage_tr] = useState([]);
+    const [areasOfUsage_en, setAreasOfUsage_en] = useState([]);
     const [technicalInfo_tr, setTechnicalInfo_tr] = useState([]);
     const [technicalInfo_en, setTechnicalInfo_en] = useState([]);
     const [bgImage, setBgImage] = useState(null);
@@ -67,9 +69,7 @@ export default function Products() {
     );
     const productsData = useSelector((state) => state.productSlice.products);
 
-    const [filteredFacilities, setFilteredFacilities] = useState(
-        ...facilitiesData
-    );
+    const [filteredFacilities, setFilteredFacilities] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
 
     const toggleOpenNewInput = () =>
@@ -80,8 +80,8 @@ export default function Products() {
                 setProductName_en("");
                 setDescription_tr("");
                 setDescription_en("");
-                setAreasOfUsage_tr(null);
-                setAreasOfUsage_en(null);
+                setAreasOfUsage_tr([]);
+                setAreasOfUsage_en([]);
                 setTechnicalInfo_tr([]);
                 setTechnicalInfo_en([]);
                 setBgImage(null);
@@ -89,6 +89,8 @@ export default function Products() {
                 setLink("");
                 setNewTechnicalTr(false);
                 setNewTechnicalEn(false);
+                setNewAreasTr(false);
+                setNewAreasEn(false);
             }
             return !cur;
         });
@@ -144,8 +146,8 @@ export default function Products() {
             productName_en,
             description_tr,
             description_en,
-            areasOfUsage_tr,
-            areasOfUsage_en,
+            areasOfUsage_tr: JSON.stringify(areasOfUsage_tr),
+            areasOfUsage_en: JSON.stringify(areasOfUsage_en),
             technicalInfo_tr: JSON.stringify(technicalInfo_tr),
             technicalInfo_en: JSON.stringify(technicalInfo_en),
             bgImage,
@@ -160,8 +162,8 @@ export default function Products() {
             setProductName_en("");
             setDescription_tr("");
             setDescription_en("");
-            setAreasOfUsage_tr(null);
-            setAreasOfUsage_en(null);
+            setAreasOfUsage_tr([]);
+            setAreasOfUsage_en([]);
             setTechnicalInfo_tr([]);
             setTechnicalInfo_en([]);
             setBgImage(null);
@@ -169,6 +171,8 @@ export default function Products() {
             setLink("");
             setNewTechnicalTr(false);
             setNewTechnicalEn(false);
+            setNewAreasTr(false);
+            setNewAreasEn(false);
             setBtnSpinner(false);
         });
     };
@@ -193,18 +197,18 @@ export default function Products() {
         } else {
             setFilteredFacilities(filtered);
         }
-    }, [filteredMine, productsData]);
+    }, [filteredMine, facilitiesData, productsData]);
 
     useEffect(() => {
         if (filteredFacility.facilityId == null) {
             setFilteredProducts(productsData);
         } else {
             const filtered = productsData.filter(
-                (item) => item.mineId == filteredFacility.facilityId
+                (item) => item.facilityId == filteredFacility.facilityId
             );
             setFilteredProducts(filtered);
         }
-    }, [filteredFacility, productsData]);
+    }, [filteredFacility, facilitiesData, productsData]);
 
     const handleTechnical = (lang, key, value, func) => {
         const jsonKey = document.getElementById(key).value;
@@ -218,6 +222,17 @@ export default function Products() {
 
         func(false);
         document.getElementById(key).value = null;
+        document.getElementById(value).value = null;
+    };
+
+    const handleSetJSONValue = (setFunc, stateFunc, value, key) => {
+        const jsonKey = document.getElementById(key)?.value || null;
+        const jsonVal = document.getElementById(value).value;
+        jsonKey
+            ? setFunc((e) => [...e, { [jsonKey]: jsonVal }])
+            : setFunc((e) => [...e, jsonVal]);
+        //stateFunc(false);
+        jsonKey && (document.getElementById(key).value = null);
         document.getElementById(value).value = null;
     };
 
@@ -280,31 +295,65 @@ export default function Products() {
     function ObjectList({ list, deleteItem }) {
         let keys = [];
         let values = [];
-        list.forEach((el) => {
-            keys.push(...Object.keys(el));
-            values.push(...Object.values(el));
-        });
+        list &&
+            list.forEach((el) => {
+                keys.push(...Object.keys(el));
+                values.push(...Object.values(el));
+            });
 
         return (
             <div className="flex flex-col px-3 mt-1 h-full">
-                {keys.map((key, index) => {
+                {values.map((value, index) => {
                     return (
                         <div
                             key={index}
                             className="w-full flex items-center justify-between"
                         >
-                            <div className="pl-2 w-2/5 text-sm py-1 overflow-hidden">
-                                <Tooltip content={key}>
-                                    <span className="truncate">{key}</span>
+                            {keys[index] && (
+                                <div className="pl-2 w-2/5 text-sm py-1 overflow-hidden">
+                                    <Tooltip content={keys[index]}>
+                                        <span className="truncate">
+                                            {keys[index]}
+                                        </span>
+                                    </Tooltip>
+                                </div>
+                            )}
+                            <div
+                                className={`${
+                                    keys[index] ? "w-2/5" : "w-4/5"
+                                } pl-2 text-sm py-1 overflow-hidden`}
+                            >
+                                <Tooltip content={value}>
+                                    <span className="truncate">{value}</span>
                                 </Tooltip>
                             </div>
-                            <div className="pl-2 w-2/5 text-sm py-1 overflow-hidden">
-                                <Tooltip content={values[index]}>
-                                    <span className="truncate">
-                                        {values[index]}
-                                    </span>
+                            <CircleMinus
+                                className="text-blue-gray-500 cursor-pointer"
+                                size={16}
+                                onClick={() => deleteItem(index)}
+                            />
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    function ArrayList({ list, deleteItem }) {
+        return (
+            <div className="flex flex-col px-3 mt-1 h-full">
+                {list.map((item, index) => {
+                    return (
+                        <div
+                            key={index}
+                            className="w-full flex items-center justify-between"
+                        >
+                            <div className="pl-2 w-full text-sm py-1 overflow-hidden">
+                                <Tooltip content={item}>
+                                    <span className="truncate">{item}</span>
                                 </Tooltip>
                             </div>
+
                             <CircleMinus
                                 className="text-blue-gray-500 cursor-pointer"
                                 size={16}
@@ -321,7 +370,7 @@ export default function Products() {
         <div className="w-full h-full md:p-10 grid grid-cols-4 grid-rows-12 gap-10">
             {/* List */}
             <div className="flex flex-col row-span-12">
-                <Card className="p-3 mb-6 border border-blue-gray-200 shadow-none">
+                <Card className="p-3 mb-6 border border-blue-gray-200 shadow-md">
                     <span>Ürün Filtrele</span>
                     <hr className="mb-4 mt-2" />
                     <div className="w-full mb-6">
@@ -387,7 +436,7 @@ export default function Products() {
                         )}
                     </div>
                 </Card>
-                <div className="w-full h-5/6">
+                <div className="w-full h-5/6 overflow-hidden rounded-xl shadow-md">
                     <Card className="w-full h-full  border border-blue-gray-200 shadow-none">
                         <div className="w-full flex item-center justify-center p-3">
                             <span className="text-center font-semibold text-xl">
@@ -462,7 +511,11 @@ export default function Products() {
             <div className="w-full h-full grid grid-cols-2 col-span-2 row-span-2">
                 <div className="pr-5">
                     <div className="w-full mb-6">
-                        <Select label="Maden" value={selectedMine.mineName_tr}>
+                        <Select
+                            label="Maden"
+                            className="shadow-md"
+                            value={selectedMine.mineName_tr}
+                        >
                             {minesData.map((mine, index) => {
                                 return (
                                     <Option
@@ -478,6 +531,7 @@ export default function Products() {
                     <div className="w-full">
                         <Select
                             label="Fabrika"
+                            className="shadow-md"
                             value={selectedFacility.facilityName_tr}
                         >
                             {facilitiesData
@@ -505,6 +559,7 @@ export default function Products() {
                             label="Website Linki"
                             value={link}
                             onChange={(e) => setLink(e.target.value)}
+                            className="shadow-md"
                         />
                     </div>
                 </div>
@@ -527,26 +582,72 @@ export default function Products() {
                             setProductName_tr(e.target.value);
                         }}
                         disabled={openNewInput}
+                        className="shadow-md"
                     />
                 </div>
                 <div className="flex flex-1 mb-6">
                     <Textarea
                         label="Bilgi"
-                        className="min-h-52 flex flex-1"
+                        className="min-h-52 flex flex-1 shadow-md"
                         value={description_tr}
                         onChange={(e) => setDescription_tr(e.target.value)}
                     />
                 </div>
                 <div className="flex flex-1 mb-6">
-                    <Textarea
-                        label="Kullanım Alanları"
-                        className="min-h-52 flex flex-1"
-                        value={areasOfUsage_tr || ""}
-                        onChange={(e) => setAreasOfUsage_tr(e.target.value)}
-                    />
+                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
+                        <div className="w-full p-3 flex justify-between">
+                            <span className="text-sm text-blue-gray-500">
+                                Kullanım Alanları
+                            </span>
+                            <Tooltip content="Yeni Ekle">
+                                <CirclePlus
+                                    size="16"
+                                    className="text-blue-gray-500 cursor-pointer"
+                                    onClick={() => {
+                                        setNewAreasTr((cur) => !cur);
+                                    }}
+                                />
+                            </Tooltip>
+                        </div>
+                        <div className="w-full">
+                            <Collapse
+                                open={newAreasTr}
+                                className="w-full flex items-center"
+                            >
+                                <div className="w-full px-3 flex items-center justify-between">
+                                    <input
+                                        id="areasofusage-tr-value"
+                                        type="text"
+                                        className="border border-blue-gray-200 w-2/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
+                                    />
+                                    <CircleCheck
+                                        size={20}
+                                        className="cursor-pointer text-blue-gray-500"
+                                        onClick={() =>
+                                            handleSetJSONValue(
+                                                setAreasOfUsage_tr,
+                                                setNewAreasTr,
+                                                "areasofusage-tr-value"
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </Collapse>
+                        </div>
+                        <ArrayList
+                            list={areasOfUsage_tr}
+                            deleteItem={(e) =>
+                                deleteItem(
+                                    e,
+                                    areasOfUsage_tr,
+                                    setAreasOfUsage_tr
+                                )
+                            }
+                        />
+                    </Card>
                 </div>
                 <div className="flex flex-1">
-                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-none">
+                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
                         <div className="w-full p-3 flex justify-between">
                             <span className="text-sm text-blue-gray-500">
                                 Teknik Bilgiler
@@ -615,26 +716,72 @@ export default function Products() {
                         onChange={(e) => {
                             setProductName_en(e.target.value);
                         }}
+                        className="shadow-md"
                     />
                 </div>
                 <div className="flex flex-1 mb-6">
                     <Textarea
                         label="Description"
-                        className="min-h-52 flex flex-1"
+                        className="min-h-52 flex flex-1 shadow-md"
                         value={description_en}
                         onChange={(e) => setDescription_en(e.target.value)}
                     />
                 </div>
                 <div className="flex flex-1 mb-6">
-                    <Textarea
-                        label="Areas Of Usage"
-                        className="min-h-52 flex flex-1"
-                        value={areasOfUsage_en || ""}
-                        onChange={(e) => setAreasOfUsage_en(e.target.value)}
-                    />
+                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
+                        <div className="w-full p-3 flex justify-between">
+                            <span className="text-sm text-blue-gray-500">
+                                Areas Of Usage
+                            </span>
+                            <Tooltip content="Yeni Ekle">
+                                <CirclePlus
+                                    size="16"
+                                    className="text-blue-gray-500 cursor-pointer"
+                                    onClick={() => {
+                                        setNewAreasEn((cur) => !cur);
+                                    }}
+                                />
+                            </Tooltip>
+                        </div>
+                        <div className="w-full">
+                            <Collapse
+                                open={newAreasEn}
+                                className="w-full flex items-center"
+                            >
+                                <div className="w-full px-3 flex items-center justify-between">
+                                    <input
+                                        id="areasofusage-en-value"
+                                        type="text"
+                                        className="border border-blue-gray-200 w-2/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
+                                    />
+                                    <CircleCheck
+                                        size={20}
+                                        className="cursor-pointer text-blue-gray-500"
+                                        onClick={() =>
+                                            handleSetJSONValue(
+                                                setAreasOfUsage_en,
+                                                setNewAreasEn,
+                                                "areasofusage-en-value"
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </Collapse>
+                        </div>
+                        <ArrayList
+                            list={areasOfUsage_en}
+                            deleteItem={(e) =>
+                                deleteItem(
+                                    e,
+                                    areasOfUsage_en,
+                                    setAreasOfUsage_en
+                                )
+                            }
+                        />
+                    </Card>
                 </div>
                 <div className="flex flex-1">
-                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-none">
+                    <Card className="w-full min-h-52 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
                         <div className="w-full p-3 flex justify-between">
                             <span className="text-sm text-blue-gray-500">
                                 Technical Info
@@ -697,7 +844,7 @@ export default function Products() {
             <div className="w-full h-10">
                 <Button
                     className="w-full bg-[#1e40af] flex items-center justify-center"
-                    disabled={!setProductName_tr || !validation()}
+                    disabled={!setProductName_tr || !validation() || btnSpinner}
                     size="sm"
                     onClick={() => save()}
                 >

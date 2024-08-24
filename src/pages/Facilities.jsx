@@ -50,9 +50,7 @@ export default function Facilities() {
     const facilitiesData = useSelector(
         (state) => state.facilitySlice.facilities
     );
-    const [filteredFacilities, setFilteredFacilities] = useState(
-        ...facilitiesData
-    );
+    const [filteredFacilities, setFilteredFacilities] = useState([]);
     const minesData = useSelector((state) => state.mineSlice.mines);
 
     const toggleOpenNewInput = () =>
@@ -161,7 +159,7 @@ export default function Facilities() {
             );
             setFilteredFacilities(filtered);
         }
-    }, [filteredMine]);
+    }, [filteredMine, facilitiesData]);
 
     function DeleteDialog() {
         return (
