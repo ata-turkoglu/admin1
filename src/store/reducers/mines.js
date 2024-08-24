@@ -52,7 +52,6 @@ export const minesSlice = createSlice({
 });
 
 export const getMines = createAsyncThunk("/mines/get", async (mineId) => {
-    console.log("getMines");
     return await axios
         .get(SERVER_URL + "/mines", { params: { mineId } })
         .then((result) => result.data)
