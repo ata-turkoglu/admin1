@@ -2,10 +2,12 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Common from "./pages/Common";
 import Products from "./pages/Products";
-import Contents from "./pages/Contents";
 import Mines from "./pages/Mines";
 import Facilities from "./pages/Facilities";
 import Website from "./pages/Website";
+import MainPage from "./pages/MainPage";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 export default function App() {
     return (
@@ -21,7 +23,9 @@ export default function App() {
                         ></Route>
                     </Route>
                     <Route path="website" element={<Website />}>
-                        <Route path="contents" element={<Contents />}></Route>
+                        <Route path="main" element={<MainPage />}></Route>
+                        <Route path="about" element={<About />}></Route>
+                        <Route path="contact" element={<Contact />}></Route>
                     </Route>
                 </Route>
             </Routes>
