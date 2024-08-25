@@ -3,6 +3,7 @@ import mineSlice from "./reducers/mines";
 import facilitySlice from "./reducers/facilities";
 import productSlice from "./reducers/products";
 import mainPageSlice from "./reducers/mainPage";
+import aboutPageSlice from "./reducers/about";
 
 export default configureStore({
     reducer: {
@@ -10,5 +11,6 @@ export default configureStore({
         facilitySlice,
         productSlice,
         mainPageSlice,
+        aboutPageSlice,
     },
 });
