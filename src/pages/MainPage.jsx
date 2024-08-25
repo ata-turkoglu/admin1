@@ -106,17 +106,11 @@ export default function MainPage() {
         };
         dispatch(saveMainPageData(JSON.stringify(data))).then(({ payload }) => {
             setNewVideoTextTr(false);
-            setVideoTexts_tr([]);
             setNewVideoTextEn(false);
-            setVideoTexts_en([]);
             setNewFacilitiesTextTr(false);
-            setFacilitiesText_tr([]);
             setNewFacilitiesTextEn(false);
-            setFacilitiesText_en([]);
             setNewSustainTextTr(false);
-            setSustainText_tr([]);
             setNewSustainTextEn(false);
-            setSustainText_en([]);
             setBtnSpinner(false);
         });
     };

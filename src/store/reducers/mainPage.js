@@ -19,6 +19,7 @@ export const mainPageSlice = createSlice({
         builder.addCase(saveMainPageData.fulfilled, (state, action) => {
             const data = action.payload;
             if (data.status) {
+                state.mainPageData = JSON.parse(data.data);
             } else {
                 console.log("error", data.error);
                 state.saveButtonSpinner = false;
@@ -40,8 +41,7 @@ export const saveMainPageData = createAsyncThunk(
         return await axios
             .post(SERVER_URL + "/website/mainPage", { data })
             .then((result) => {
-                console.log("saveMainPageData", result);
-                return data;
+                return { status: true, data };
             })
             .catch((e) => console.log("error", e));
     }
