@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     X,
     PackageSearch,
@@ -16,20 +16,26 @@ import {
     ListItemPrefix,
     ListItemSuffix,
 } from "@material-tailwind/react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 export default function Common() {
+    const [pathname, setPathname] = useState(false);
     const [open, setOpen] = useState(false);
     const openDrawer = () => setOpen(true);
     const closeDrawer = () => setOpen(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        setPathname(location.pathname);
+    }, [location]);
 
     return (
         <div id="Common" className="w-full h-full flex flex-col">
             <Drawer
                 open={open}
                 onClose={closeDrawer}
-                className="w-[370px] !max-w-none bg-blue-gray-50 z-[10000]"
+                className="w-[370px] !max-w-none z-[10000]"
             >
                 <div className="mb-2 flex items-center justify-between p-4">
                     <Typography variant="h5" color="blue-gray">
@@ -44,7 +50,10 @@ export default function Common() {
                     </IconButton>
                 </div>
                 <List>
-                    <ListItem onClick={() => navigate("/common/mines")}>
+                    <ListItem
+                        onClick={() => navigate("/common/mines")}
+                        selected={pathname == "/common/mines"}
+                    >
                         <ListItemPrefix>
                             <Pickaxe />
                         </ListItemPrefix>
@@ -55,7 +64,10 @@ export default function Common() {
                             </ListItemSuffix>
                         )}
                     </ListItem>
-                    <ListItem onClick={() => navigate("/common/facilities")}>
+                    <ListItem
+                        onClick={() => navigate("/common/facilities")}
+                        selected={pathname == "/common/facilities"}
+                    >
                         <ListItemPrefix>
                             <Factory />
                         </ListItemPrefix>
@@ -66,7 +78,10 @@ export default function Common() {
                             </ListItemSuffix>
                         )}
                     </ListItem>
-                    <ListItem onClick={() => navigate("/common/products")}>
+                    <ListItem
+                        onClick={() => navigate("/common/products")}
+                        selected={pathname == "/common/products"}
+                    >
                         <ListItemPrefix>
                             <PackageSearch />
                         </ListItemPrefix>

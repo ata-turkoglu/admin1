@@ -13,7 +13,7 @@ function NavList() {
         <ul className="my-2 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
             <Typography as="li" color="blue-gray" className="p-1 font-semibold">
                 <Link
-                    to="/common"
+                    to="/common/mines"
                     className="flex items-center hover:text-blue-500 transition-colors"
                 >
                     Genel
@@ -21,13 +21,13 @@ function NavList() {
             </Typography>
             <Typography as="li" color="blue-gray" className="p-1 font-semibold">
                 <Link
-                    to="/website"
+                    to="/website/main"
                     className="flex items-center hover:text-blue-500 transition-colors"
                 >
                     Websitesi
                 </Link>
             </Typography>
-            <Typography as="li" color="blue-gray" className="p-1 font-semibold">
+            {/* <Typography as="li" color="blue-gray" className="p-1 font-semibold">
                 <a
                     href="#"
                     className="flex items-center hover:text-blue-500 transition-colors"
@@ -42,7 +42,7 @@ function NavList() {
                 >
                     Kullanıcılar
                 </a>
-            </Typography>
+            </Typography> */}
         </ul>
     );
 }
