@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-const SERVER_URL = "http://localhost:3000/pomzaexport";
+//const SERVER_URL = "http://localhost:3000/pomzaexport";
 
 const initialState = {
     facilities: [],
@@ -12,7 +12,7 @@ export const facilitySlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getFacilities.fulfilled, (state, action) => {
-            state.facilities = action.payload;
+            if (action.payload) state.facilities = action.payload;
         });
 
         builder.addCase(addEditFacility.fulfilled, (state, action) => {
@@ -55,8 +55,14 @@ export const getFacilities = createAsyncThunk(
     "/facilities/get",
     async (facilityId) => {
         return await axios
-            .get(SERVER_URL + "/facilities", { params: { facilityId } })
-            .then((result) => result.data)
+            .get("/facilities", { params: { facilityId } })
+            .then((result) => {
+                if (result.status == 200) {
+                    return result.data;
+                } else {
+                    return result.response.data;
+                }
+            })
             .catch((e) => console.log("error", e));
     }
 );
@@ -65,7 +71,7 @@ export const addEditFacility = createAsyncThunk(
     "/facilities/add",
     async (data) => {
         return await axios
-            .post(SERVER_URL + "/facilities", { data })
+            .post("/facilities", { data })
             .then((result) => {
                 return { ...data, ...result.data, add: !data.facilityId };
             })
@@ -77,7 +83,7 @@ export const deleteFacility = createAsyncThunk(
     "/facilities/delete",
     async (facilityId) => {
         return await axios
-            .delete(SERVER_URL + "/facilities", { params: { facilityId } })
+            .delete("/facilities", { params: { facilityId } })
             .then((result) => result.data)
             .catch((e) => console.log("error", e));
     }

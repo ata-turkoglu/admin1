@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-const SERVER_URL = "http://localhost:3000/pomzaexport";
+//const SERVER_URL = "http://localhost:3000/pomzaexport";
 
 const initialState = {
     mines: [],
@@ -12,7 +12,7 @@ export const minesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getMines.fulfilled, (state, action) => {
-            state.mines = action.payload;
+            if (action.payload) state.mines = action.payload;
         });
 
         builder.addCase(addEditMine.fulfilled, (state, action) => {
@@ -53,14 +53,20 @@ export const minesSlice = createSlice({
 
 export const getMines = createAsyncThunk("/mines/get", async (mineId) => {
     return await axios
-        .get(SERVER_URL + "/mines", { params: { mineId } })
-        .then((result) => result.data)
+        .get("/mines", { params: { mineId } })
+        .then((result) => {
+            if (result.status == 200) {
+                return result.data;
+            } else {
+                return result.response.data;
+            }
+        })
         .catch((e) => console.log("error", e));
 });
 
 export const addEditMine = createAsyncThunk("/mines/add", async (data) => {
     return await axios
-        .post(SERVER_URL + "/mine", { data })
+        .post("/mine", { data })
         .then((result) => {
             return { ...data, ...result.data, add: !data.mineId };
         })
@@ -69,7 +75,7 @@ export const addEditMine = createAsyncThunk("/mines/add", async (data) => {
 
 export const deleteMine = createAsyncThunk("/mines/delete", async (mineId) => {
     return await axios
-        .delete(SERVER_URL + "/mine", { params: { mineId } })
+        .delete("/mine", { params: { mineId } })
         .then((result) => result.data)
         .catch((e) => console.log("error", e));
 });

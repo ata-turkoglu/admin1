@@ -62,7 +62,6 @@ export default function About() {
         setBtnSpinner(true);
         const data = { text_tr, text_en };
         dispatch(saveAboutText(JSON.stringify(data))).then((res) => {
-            console.log("save", res);
             setBtnSpinner(false);
         });
     };

@@ -4,6 +4,7 @@ import facilitySlice from "./reducers/facilities";
 import productSlice from "./reducers/products";
 import mainPageSlice from "./reducers/mainPage";
 import aboutPageSlice from "./reducers/about";
+import userSlice from "./reducers/user";
 
 export default configureStore({
     reducer: {
@@ -12,5 +13,6 @@ export default configureStore({
         productSlice,
         mainPageSlice,
         aboutPageSlice,
+        userSlice,
     },
 });

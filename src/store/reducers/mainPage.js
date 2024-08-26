@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const SERVER_URL = "http://localhost:3000/pomzaexport";
+//const SERVER_URL = "http://localhost:3000/pomzaexport";
 
 const initialState = {
     mainPageData: null,
@@ -13,7 +13,7 @@ export const mainPageSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getMainPageData.fulfilled, (state, action) => {
-            state.mainPageData = action.payload;
+            if (action.payload) state.mainPageData = action.payload;
         });
 
         builder.addCase(saveMainPageData.fulfilled, (state, action) => {
@@ -30,8 +30,14 @@ export const mainPageSlice = createSlice({
 
 export const getMainPageData = createAsyncThunk("/mainPage/get", async () => {
     return await axios
-        .get(SERVER_URL + "/website/mainPage")
-        .then((result) => result.data)
+        .get("/website/mainPage")
+        .then((result) => {
+            if (result.status == 200) {
+                return result.data;
+            } else {
+                return result.response.data;
+            }
+        })
         .catch((e) => console.log("error", e));
 });
 
@@ -39,7 +45,7 @@ export const saveMainPageData = createAsyncThunk(
     "/mainPage/save",
     async (data) => {
         return await axios
-            .post(SERVER_URL + "/website/mainPage", { data })
+            .post("/website/mainPage", { data })
             .then((result) => {
                 return { status: true, data };
             })
