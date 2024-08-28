@@ -58,23 +58,23 @@ export default function Login() {
                     <div className="relative w-full">
                         <input
                             id="password"
-                            type={!showPass ? "text" : "password"}
+                            type={showPass ? "text" : "password"}
                             className="w-full border border-neutral-200 text-neutral-700 rounded px-3 py-2 text-sm shadow-inner"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                         <div className="absolute right-2 inset-y-0 my-auto cursor-pointer grid items-center">
-                            {showPass ? (
+                            {!showPass ? (
                                 <Eye
                                     size="16"
                                     color="#525252"
-                                    onClick={() => setShowPass(false)}
+                                    onClick={() => setShowPass(true)}
                                 />
                             ) : (
                                 <EyeOff
                                     size="16"
                                     color="#525252"
-                                    onClick={() => setShowPass(true)}
+                                    onClick={() => setShowPass(false)}
                                 />
                             )}
                         </div>
