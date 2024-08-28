@@ -1,4 +1,10 @@
-import React, { useState, useLayoutEffect, useEffect, memo } from "react";
+import React, {
+    useState,
+    useLayoutEffect,
+    useEffect,
+    memo,
+    useRef,
+} from "react";
 import {
     Option,
     Select,
@@ -23,6 +29,8 @@ import {
     deleteFacility,
 } from "../store/reducers/facilities";
 import { getMines } from "../store/reducers/mines";
+import { MapContainer, TileLayer, Popup, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 let deleteDialogResolve;
 
@@ -45,6 +53,10 @@ export default function Facilities() {
     const [bgImage, setBgImage] = useState(null);
     const [images, setImages] = useState(null);
 
+    const [location, setLocation] = useState(null);
+
+    const mapRef = useRef();
+
     const dispatch = useDispatch();
 
     const facilitiesData = useSelector(
@@ -63,7 +75,9 @@ export default function Facilities() {
                 setDescription_en("");
                 setBgImage("");
                 setImages(null);
+                setLocation(null);
             }
+            mapRef.current.flyTo([38.4891, 28.0212], 7);
             return !cur;
         });
 
@@ -86,6 +100,9 @@ export default function Facilities() {
 
         setDescription_tr(foundFacility.description_tr);
         setDescription_en(foundFacility.description_en);
+
+        setLocation(foundMine.location);
+        mapRef.current.flyTo(foundMine.location, 15);
     };
 
     const deleteHandle = (facilityId) => {
@@ -379,8 +396,19 @@ export default function Facilities() {
 
             {/* Location */}
             <div className="w-full row-span-11">
-                <Card className="w-full h-full flex items-center justify-center p-6">
-                    Map
+                <Card className="w-full h-full flex items-center justify-center p-0 overflow-hidden">
+                    <MapContainer
+                        center={[38.4891, 28.0212]}
+                        zoom={7}
+                        ref={mapRef}
+                        style={{ height: "100%", width: "100%" }}
+                    >
+                        <TileLayer
+                            attribution='&copy; <a href="https://tiles.stadiamaps.com/copyright">Stadia Maps</a> contributors'
+                            url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
+                        />
+                        {location && <Marker position={location}></Marker>}
+                    </MapContainer>
                 </Card>
             </div>
 

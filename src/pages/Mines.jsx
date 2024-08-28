@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useState, useRef } from "react";
 import {
     List,
     ListItem,
@@ -16,6 +16,14 @@ import {
 import { Trash2, CirclePlus, CircleMinus } from "lucide-react";
 import { getMines, addEditMine, deleteMine } from "../store/reducers/mines";
 import { useDispatch, useSelector } from "react-redux";
+import {
+    MapContainer,
+    TileLayer,
+    useMapEvents,
+    Marker,
+    Popup,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 let deleteDialogResolve;
 
@@ -36,6 +44,8 @@ export default function Mines() {
     const [bgImage, setBgImage] = useState(null);
     const [images, setImages] = useState(null);
 
+    const mapRef = useRef(null);
+
     const dispatch = useDispatch();
 
     const minesData = useSelector((state) => state.mineSlice.mines);
@@ -53,6 +63,7 @@ export default function Mines() {
                 setProvince("");
                 setDistrict("");
                 setLocation(null);
+                mapRef.current.flyTo([38.4891, 28.0212], 7);
             }
             return !cur;
         });
@@ -70,6 +81,8 @@ export default function Mines() {
 
         setProvince(foundMine.province);
         setDistrict(foundMine.district);
+        setLocation(foundMine.location);
+        mapRef.current.flyTo(foundMine.location, 15);
     };
 
     const deleteHandle = (mineId) => {
@@ -142,6 +155,26 @@ export default function Mines() {
                     </Button>
                 </DialogFooter>
             </Dialog>
+        );
+    }
+
+    function LocationMarker() {
+        const map = useMapEvents({
+            click(e) {
+                setLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
+                map.flyTo(e.latlng, 15);
+            },
+        });
+
+        return location === null ? null : (
+            <Marker position={location}>
+                <Popup>
+                    <div className="flex flex-col">
+                        <span>lat: {location.lat}</span>
+                        <span>lng: {location.lng}</span>
+                    </div>
+                </Popup>
+            </Marker>
         );
     }
 
@@ -286,8 +319,19 @@ export default function Mines() {
                         />
                     </div>
                 </Card>
-                <Card className="w-full h-full flex items-center justify-center p-6">
-                    Location
+                <Card className="w-full h-full flex items-center justify-center p-0 overflow-hidden">
+                    <MapContainer
+                        center={[38.4891, 28.0212]}
+                        zoom={7}
+                        ref={mapRef}
+                        style={{ height: "100%", width: "100%" }}
+                    >
+                        <TileLayer
+                            attribution='&copy; <a href="https://tiles.stadiamaps.com/copyright">Stadia Maps</a> contributors'
+                            url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
+                        />
+                        <LocationMarker />
+                    </MapContainer>
                 </Card>
             </div>
 
