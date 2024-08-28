@@ -24,6 +24,12 @@ import {
     Popup,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import marker from "/assets/marker-icon.png";
+import { Icon } from "leaflet";
+const myIcon = new Icon({
+    iconUrl: marker,
+    iconSize: [25, 41],
+});
 
 let deleteDialogResolve;
 
@@ -63,7 +69,7 @@ export default function Mines() {
                 setProvince("");
                 setDistrict("");
                 setLocation(null);
-                mapRef.current.flyTo([38.4891, 28.0212], 7);
+                mapRef.current.flyTo({ lat: 38.4891, lng: 28.0212 }, 7);
             }
             return !cur;
         });
@@ -167,7 +173,7 @@ export default function Mines() {
         });
 
         return location === null ? null : (
-            <Marker position={location}>
+            <Marker position={location} icon={myIcon}>
                 <Popup>
                     <div className="flex flex-col">
                         <span>lat: {location.lat}</span>

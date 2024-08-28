@@ -31,6 +31,12 @@ import {
 import { getMines } from "../store/reducers/mines";
 import { MapContainer, TileLayer, Popup, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import marker from "/assets/marker-icon.png";
+import { Icon } from "leaflet";
+const myIcon = new Icon({
+    iconUrl: marker,
+    iconSize: [25, 41],
+});
 
 let deleteDialogResolve;
 
@@ -77,7 +83,7 @@ export default function Facilities() {
                 setImages(null);
                 setLocation(null);
             }
-            mapRef.current.flyTo([38.4891, 28.0212], 7);
+            mapRef.current.flyTo({ lat: 38.4891, lng: 28.0212 }, 7);
             return !cur;
         });
 
@@ -407,7 +413,9 @@ export default function Facilities() {
                             attribution='&copy; <a href="https://tiles.stadiamaps.com/copyright">Stadia Maps</a> contributors'
                             url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
                         />
-                        {location && <Marker position={location}></Marker>}
+                        {location && (
+                            <Marker position={location} icon={myIcon}></Marker>
+                        )}
                     </MapContainer>
                 </Card>
             </div>
