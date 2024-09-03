@@ -62,9 +62,8 @@ export default function Header() {
     }, []);
 
     return (
-        <Navbar className="w-full min-w-full h-[6vh] px-6 py-3 bg-blue-gray-50 m-0 !rounded-none border-none">
-            <div className="flex items-center justify-between text-blue-gray-900">
-                {/* <Typography
+        <Navbar className="w-full min-w-full h-[6vh] px-6 py-3 bg-blue-gray-50 m-0 !rounded-none border-none md:p-auto flex flex-row-reverse items-center justify-between text-blue-gray-900">
+            {/* <Typography
                     as="a"
                     href="#"
                     variant="h6"
@@ -72,19 +71,18 @@ export default function Header() {
                 >
                     <Menu />
                 </Typography> */}
-                <div>{""}</div>
-                <div className="hidden lg:block">
-                    <NavList />
-                </div>
-                <IconButton
-                    variant="text"
-                    className="ml-auto h-6 w-6 text-inherit hover:bg-transparent focus:bg-transparent active:bg-transparent lg:hidden"
-                    ripple={false}
-                    onClick={() => setOpenNav(!openNav)}
-                >
-                    {openNav ? <X /> : <Menu />}
-                </IconButton>
+            <div>{""}</div>
+            <div className="hidden lg:block">
+                <NavList />
             </div>
+            <IconButton
+                variant="text"
+                className="ml-auto h-6 w-6 text-inherit hover:bg-transparent focus:bg-transparent active:bg-transparent lg:hidden"
+                ripple={false}
+                onClick={() => setOpenNav(!openNav)}
+            >
+                {openNav ? <X /> : <Menu />}
+            </IconButton>
             <Collapse open={openNav}>
                 <NavList />
             </Collapse>
