@@ -17,7 +17,7 @@ export const productsSlice = createSlice({
         builder.addCase(addEditProduct.fulfilled, (state, action) => {
             const data = action.payload;
             if (data.status) {
-                delete data.status;
+                /* delete data.status;
                 if (data.add) {
                     delete data.add;
                     state.products.push(data);
@@ -26,8 +26,11 @@ export const productsSlice = createSlice({
                     const index = state.products.findIndex(
                         (product) => product.productId == data.productId
                     );
+                    console.log("index", index);
                     state.products[index] = data;
-                }
+
+                    console.log("3333", state.products[index]);
+                } */
             } else {
                 console.log("error", data.error);
                 state.saveButtonSpinner = false;
@@ -68,10 +71,11 @@ export const getProducts = createAsyncThunk(
 
 export const addEditProduct = createAsyncThunk(
     "/products/add",
-    async (data) => {
+    async (data, { dispatch }) => {
         return await axios
             .post("/products", { data })
             .then((result) => {
+                dispatch(getProducts());
                 return { ...data, ...result.data, add: !data.productId };
             })
             .catch((e) => console.log("error", e));

@@ -588,7 +588,7 @@ export default function Products() {
                 <div className="flex flex-1 mb-6">
                     <Textarea
                         label="Bilgi"
-                        className="min-h-52 flex flex-1 shadow-md"
+                        className="min-h-52 max-h-96 flex flex-1 shadow-md"
                         value={description_tr}
                         onChange={(e) => setDescription_tr(e.target.value)}
                     />
@@ -618,7 +618,7 @@ export default function Products() {
                                     <input
                                         id="areasofusage-tr-value"
                                         type="text"
-                                        className="border border-blue-gray-200 w-2/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
+                                        className="border border-blue-gray-200 w-4/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
                                     />
                                     <CircleCheck
                                         size={20}
@@ -722,7 +722,7 @@ export default function Products() {
                 <div className="flex flex-1 mb-6">
                     <Textarea
                         label="Description"
-                        className="min-h-52 flex flex-1 shadow-md"
+                        className="min-h-52 max-h-96 flex flex-1 shadow-md"
                         value={description_en}
                         onChange={(e) => setDescription_en(e.target.value)}
                     />
@@ -752,7 +752,7 @@ export default function Products() {
                                     <input
                                         id="areasofusage-en-value"
                                         type="text"
-                                        className="border border-blue-gray-200 w-2/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
+                                        className="border border-blue-gray-200 w-4/5 rounded-md mr-3 outline-none px-2 py-1 text-xs"
                                     />
                                     <CircleCheck
                                         size={20}
