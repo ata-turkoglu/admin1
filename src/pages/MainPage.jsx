@@ -1,32 +1,19 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import {
-    Card,
-    Collapse,
-    Tooltip,
-    Button,
-    Spinner,
-} from "@material-tailwind/react";
-import { Trash2, CirclePlus, CircleMinus, CircleCheck } from "lucide-react";
+import { Card, Button, Spinner } from "@material-tailwind/react";
 import { getMainPageData, saveMainPageData } from "../store/reducers/mainPage";
 import { useDispatch, useSelector } from "react-redux";
 import ListView from "../components/listView";
 
 export default function MainPage() {
-    const [newVideoTextTr, setNewVideoTextTr] = useState(false);
     const [videoTexts_tr, setVideoTexts_tr] = useState([]);
-    const [newVideoTextEn, setNewVideoTextEn] = useState(false);
     const [videoTexts_en, setVideoTexts_en] = useState([]);
 
-    const [newFacilitiesTextTr, setNewFacilitiesTextTr] = useState(false);
     const [facilitiesText_tr, setFacilitiesText_tr] = useState([]);
-    const [newFacilitiesTextEn, setNewFacilitiesTextEn] = useState(false);
     const [facilitiesText_en, setFacilitiesText_en] = useState([]);
     const [facilitiesTextHeader_tr, setFacilitiesTextHeader_tr] = useState("");
     const [facilitiesTextHeader_en, setFacilitiesTextHeader_en] = useState("");
 
-    const [newSustainTextTr, setNewSustainTextTr] = useState(false);
     const [sustainText_tr, setSustainText_tr] = useState([]);
-    const [newSustainTextEn, setNewSustainTextEn] = useState(false);
     const [sustainText_en, setSustainText_en] = useState([]);
     const [sustainTextHeader_tr, setSustainTextHeader_tr] = useState("");
     const [sustainTextHeader_en, setSustainTextHeader_en] = useState("");
@@ -62,48 +49,6 @@ export default function MainPage() {
         }
     }, [mainPageData]);
 
-    const handleSetJSONValue = (setFunc, stateFunc, value, key) => {
-        const jsonKey = document.getElementById(key)?.value || null;
-        const jsonVal = document.getElementById(value).value;
-        jsonKey
-            ? setFunc((e) => [...e, { [jsonKey]: jsonVal }])
-            : setFunc((e) => [...e, jsonVal]);
-        //stateFunc(false);
-        jsonKey && (document.getElementById(key).value = null);
-        document.getElementById(value).value = null;
-    };
-
-    function ArrayList({ list, deleteItem }) {
-        return (
-            <div className="flex flex-col px-3 mt-1 h-full">
-                {list.map((item, index) => {
-                    return (
-                        <div
-                            key={index}
-                            className="w-full flex items-center justify-between"
-                        >
-                            <div className="pl-2 w-full text-sm py-2 overflow-hidden">
-                                <span className="text-clip">{item}</span>
-                            </div>
-
-                            <CircleMinus
-                                className="text-blue-gray-500 cursor-pointer"
-                                size={16}
-                                onClick={() => deleteItem(index)}
-                            />
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }
-
-    const deleteItem = (indx, list, func) => {
-        let nlist = [...list];
-        nlist.splice(indx, 1);
-        func(nlist);
-    };
-
     const save = () => {
         setBtnSpinner(true);
         const data = {
@@ -119,12 +64,6 @@ export default function MainPage() {
             sustainText_en,
         };
         dispatch(saveMainPageData(JSON.stringify(data))).then(({ payload }) => {
-            setNewVideoTextTr(false);
-            setNewVideoTextEn(false);
-            setNewFacilitiesTextTr(false);
-            setNewFacilitiesTextEn(false);
-            setNewSustainTextTr(false);
-            setNewSustainTextEn(false);
             setBtnSpinner(false);
         });
     };
@@ -134,131 +73,16 @@ export default function MainPage() {
             <span className="pb-3 text-lg"> Video Bölümü</span>
             <div className="w-full grid grid-cols-2 gap-10">
                 <ListView
-                    key={1}
                     header="Video Yazıları"
                     receivedList={videoTexts_tr}
                     setList={setVideoTexts_tr}
+                    border
                 />
                 <ListView
-                    key={2}
                     header="Video Texts"
                     receivedList={videoTexts_en}
                     setList={setVideoTexts_en}
                 />
-                {/* <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            Video Yazıları
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newVideoTextTr ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewVideoTextTr(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewVideoTextTr(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newVideoTextTr}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="video-text-tr-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setVideoTexts_tr,
-                                            setNewVideoTextTr,
-                                            "video-text-tr-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={videoTexts_tr}
-                        deleteItem={(e) =>
-                            deleteItem(e, videoTexts_tr, setVideoTexts_tr)
-                        }
-                    />
-                </Card>
-                <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            Video Texts
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newVideoTextEn ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewVideoTextEn(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewVideoTextEn(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newVideoTextEn}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="video-text-en-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setVideoTexts_en,
-                                            setNewVideoTextEn,
-                                            "video-text-en-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={videoTexts_en}
-                        deleteItem={(e) =>
-                            deleteItem(e, videoTexts_en, setVideoTexts_en)
-                        }
-                    />
-                </Card> */}
             </div>
             <hr className="my-8 w-full" />
             <span className="pb-3 text-lg">İşletmeler</span>
@@ -277,64 +101,11 @@ export default function MainPage() {
                             className="border border-blue-gray-200 w-full h-16 rounded-md outline-none px-2 py-1 text-xs"
                         />
                     </div>
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            İçerik
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newFacilitiesTextTr ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewFacilitiesTextTr(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewFacilitiesTextTr(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newFacilitiesTextTr}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="facilities-text-tr-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setFacilitiesText_tr,
-                                            setNewFacilitiesTextTr,
-                                            "facilities-text-tr-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={facilitiesText_tr}
-                        deleteItem={(e) =>
-                            deleteItem(
-                                e,
-                                facilitiesText_tr,
-                                setFacilitiesText_tr
-                            )
-                        }
+                    <ListView
+                        header="İçerik"
+                        receivedList={facilitiesText_tr}
+                        setList={setFacilitiesText_tr}
+                        border={false}
                     />
                 </Card>
                 <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
@@ -351,64 +122,11 @@ export default function MainPage() {
                             className="border border-blue-gray-200 w-full h-16 rounded-md outline-none px-2 py-1 text-xs"
                         />
                     </div>
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            Content
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newFacilitiesTextEn ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewFacilitiesTextEn(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewFacilitiesTextEn(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newFacilitiesTextEn}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="facilities-text-en-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setFacilitiesText_en,
-                                            setNewFacilitiesTextEn,
-                                            "facilities-text-en-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={facilitiesText_en}
-                        deleteItem={(e) =>
-                            deleteItem(
-                                e,
-                                facilitiesText_en,
-                                setFacilitiesText_en
-                            )
-                        }
+                    <ListView
+                        header="Content"
+                        receivedList={facilitiesText_en}
+                        setList={setFacilitiesText_en}
+                        border={false}
                     />
                 </Card>
             </div>
@@ -429,60 +147,11 @@ export default function MainPage() {
                             className="border border-blue-gray-200 w-full h-16 rounded-md outline-none px-2 py-1 text-xs"
                         />
                     </div>
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            Sürdürebilirlik Bilgisi
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newSustainTextTr ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewSustainTextTr(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewSustainTextTr(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newSustainTextTr}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="sustain-text-tr-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setSustainText_tr,
-                                            setNewSustainTextTr,
-                                            "sustain-text-tr-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={sustainText_tr}
-                        deleteItem={(e) =>
-                            deleteItem(e, sustainText_tr, setSustainText_tr)
-                        }
+                    <ListView
+                        header="Sürdürebilirlik Bilgisi"
+                        receivedList={sustainText_tr}
+                        setList={setSustainText_tr}
+                        border={false}
                     />
                 </Card>
                 <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
@@ -499,60 +168,11 @@ export default function MainPage() {
                             className="border border-blue-gray-200 w-full h-16 rounded-md outline-none px-2 py-1 text-xs"
                         />
                     </div>
-                    <div className="w-full p-3 flex justify-between">
-                        <span className="text-sm text-blue-gray-500">
-                            Sustainability Content
-                        </span>
-                        <Tooltip content="Yeni Ekle">
-                            {!newSustainTextEn ? (
-                                <CirclePlus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewSustainTextEn(true);
-                                    }}
-                                />
-                            ) : (
-                                <CircleMinus
-                                    size="16"
-                                    className="text-blue-gray-500 cursor-pointer"
-                                    onClick={() => {
-                                        setNewSustainTextEn(false);
-                                    }}
-                                />
-                            )}
-                        </Tooltip>
-                    </div>
-                    <div className="w-full">
-                        <Collapse
-                            open={newSustainTextEn}
-                            className="w-full flex items-center"
-                        >
-                            <div className="w-full px-3 flex items-center justify-between">
-                                <textarea
-                                    id="sustain-text-en-value"
-                                    type="text"
-                                    className="border border-blue-gray-200 w-full h-16 rounded-md mr-3 outline-none px-2 py-1 text-xs"
-                                />
-                                <CircleCheck
-                                    size={20}
-                                    className="cursor-pointer text-blue-gray-500"
-                                    onClick={() =>
-                                        handleSetJSONValue(
-                                            setSustainText_en,
-                                            setNewSustainTextEn,
-                                            "sustain-text-en-value"
-                                        )
-                                    }
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                    <ArrayList
-                        list={sustainText_en}
-                        deleteItem={(e) =>
-                            deleteItem(e, sustainText_en, setSustainText_en)
-                        }
+                    <ListView
+                        header="Sustainability Content"
+                        receivedList={sustainText_en}
+                        setList={setSustainText_en}
+                        border={false}
                     />
                 </Card>
             </div>

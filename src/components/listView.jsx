@@ -1,7 +1,12 @@
 import React, { useRef, useState } from "react";
 import { CircleMinus, CirclePlus, CircleCheck } from "lucide-react";
 
-export default function ListView({ header, receivedList, setList }) {
+export default function ListView({
+    header,
+    receivedList,
+    setList,
+    border = true,
+}) {
     const [newInputState, setNewInputState] = useState(false);
     const textareaRef = useRef();
 
@@ -43,12 +48,12 @@ export default function ListView({ header, receivedList, setList }) {
                             onDragEnter={() => (enteredKey = index)}
                             onDragEnd={() => dragEnd()}
                         >
-                            <div className="pl-2 w-full text-sm py-2 overflow-hidden">
+                            <div className="w-full text-sm py-2 overflow-hidden">
                                 <span className="text-clip">{item}</span>
                             </div>
 
                             <CircleMinus
-                                className="text-blue-gray-500 cursor-pointer"
+                                className="text-blue-gray-500 cursor-pointer ml-3"
                                 size={16}
                                 onClick={() => deleteItem(index)}
                             />
@@ -60,7 +65,12 @@ export default function ListView({ header, receivedList, setList }) {
     };
 
     return (
-        <div className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md rounded-md p-3">
+        <div
+            className={
+                "w-full min-h-80 flex flex-col flex-1 rounded-md p-3 " +
+                (border ? "border border-blue-gray-200 shadow-md" : "")
+            }
+        >
             <div className="w-full flex justify-between mb-3">
                 <span className="text-sm text-blue-gray-500">{header}</span>
                 {!newInputState ? (
