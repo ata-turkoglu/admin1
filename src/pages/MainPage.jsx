@@ -9,6 +9,7 @@ import {
 import { Trash2, CirclePlus, CircleMinus, CircleCheck } from "lucide-react";
 import { getMainPageData, saveMainPageData } from "../store/reducers/mainPage";
 import { useDispatch, useSelector } from "react-redux";
+import ListView from "../components/listView";
 
 export default function MainPage() {
     const [newVideoTextTr, setNewVideoTextTr] = useState(false);
@@ -132,7 +133,19 @@ export default function MainPage() {
         <div className="flex flex-col w-full h-fit p-6 select-text pb-12">
             <span className="pb-3 text-lg"> Video Bölümü</span>
             <div className="w-full grid grid-cols-2 gap-10">
-                <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
+                <ListView
+                    key={1}
+                    header="Video Yazıları"
+                    receivedList={videoTexts_tr}
+                    setList={setVideoTexts_tr}
+                />
+                <ListView
+                    key={2}
+                    header="Video Texts"
+                    receivedList={videoTexts_en}
+                    setList={setVideoTexts_en}
+                />
+                {/* <Card className="w-full min-h-80 flex flex-col flex-1 border border-blue-gray-200 shadow-md">
                     <div className="w-full p-3 flex justify-between">
                         <span className="text-sm text-blue-gray-500">
                             Video Yazıları
@@ -245,7 +258,7 @@ export default function MainPage() {
                             deleteItem(e, videoTexts_en, setVideoTexts_en)
                         }
                     />
-                </Card>
+                </Card> */}
             </div>
             <hr className="my-8 w-full" />
             <span className="pb-3 text-lg">İşletmeler</span>
