@@ -26,6 +26,8 @@ import {
 import "leaflet/dist/leaflet.css";
 import marker from "/assets/marker-icon.png";
 import { Icon } from "leaflet";
+import DialogModal from "../components/DialogModal";
+
 const myIcon = new Icon({
     iconUrl: marker,
     iconSize: [25, 41],
@@ -49,6 +51,10 @@ export default function Mines() {
     const [location, setLocation] = useState(null);
     const [bgImage, setBgImage] = useState(null);
     const [images, setImages] = useState(null);
+
+    const [successDialog, setSuccessDialog] = useState(false);
+    const [errorDialog, setErrorDialog] = useState(false);
+    const [errorDialogText, setErrorDialogText] = useState("");
 
     const mapRef = useRef(null);
 
@@ -127,9 +133,30 @@ export default function Mines() {
             district,
             location,
         };
-        dispatch(addEditMine(data)).then(({ payload }) => {
-            setBtnSpinner(false);
-        });
+        dispatch(addEditMine(data))
+            .then(({ payload }) => {
+                if (payload.status) {
+                    setSuccessDialog(true);
+                    setTimeout(() => {
+                        setSuccessDialog(false);
+                    }, 2000);
+                } else {
+                    setErrorDialog(true);
+                    setErrorDialogText(payload.error);
+                    setTimeout(() => {
+                        setErrorDialog(false);
+                    }, 4000);
+                }
+                setBtnSpinner(false);
+            })
+            .catch((e) => {
+                setErrorDialog(true);
+                setErrorDialogText(e);
+                setTimeout(() => {
+                    setErrorDialog(false);
+                }, 4000);
+                setBtnSpinner(false);
+            });
     };
 
     useLayoutEffect(() => {
@@ -366,6 +393,10 @@ export default function Mines() {
             </div>
 
             {dialogState && <DeleteDialog />}
+            {successDialog && <DialogModal status="success" />}
+            {errorDialog && (
+                <DialogModal status="error" errorText={errorDialogText} />
+            )}
         </div>
     );
 }

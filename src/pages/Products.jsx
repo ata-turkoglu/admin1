@@ -25,6 +25,7 @@ import {
     addEditProduct,
     deleteProduct,
 } from "../store/reducers/products";
+import DialogModal from "../components/DialogModal";
 
 let deleteDialogResolve;
 
@@ -60,6 +61,10 @@ export default function Products() {
     const [bgImage, setBgImage] = useState(null);
     const [images, setImages] = useState(null);
     const [link, setLink] = useState("");
+
+    const [successDialog, setSuccessDialog] = useState(false);
+    const [errorDialog, setErrorDialog] = useState(false);
+    const [errorDialogText, setErrorDialogText] = useState("");
 
     const dispatch = useDispatch();
 
@@ -154,27 +159,48 @@ export default function Products() {
             images,
             link,
         };
-        dispatch(addEditProduct(data)).then(({ payload }) => {
-            setOpenNewInput(false);
-            setSelectedMine(0);
-            setSelectedFacility(0);
-            setProductName_tr("");
-            setProductName_en("");
-            setDescription_tr("");
-            setDescription_en("");
-            setAreasOfUsage_tr([]);
-            setAreasOfUsage_en([]);
-            setTechnicalInfo_tr([]);
-            setTechnicalInfo_en([]);
-            setBgImage(null);
-            setImages(null);
-            setLink("");
-            setNewTechnicalTr(false);
-            setNewTechnicalEn(false);
-            setNewAreasTr(false);
-            setNewAreasEn(false);
-            setBtnSpinner(false);
-        });
+        dispatch(addEditProduct(data))
+            .then(({ payload }) => {
+                if (payload.status) {
+                    setSuccessDialog(true);
+                    setTimeout(() => {
+                        setSuccessDialog(false);
+                    }, 2000);
+                } else {
+                    setErrorDialog(true);
+                    setErrorDialogText(payload.error);
+                    setTimeout(() => {
+                        setErrorDialog(false);
+                    }, 4000);
+                }
+                setOpenNewInput(false);
+                setSelectedMine(0);
+                setSelectedFacility(0);
+                setProductName_tr("");
+                setProductName_en("");
+                setDescription_tr("");
+                setDescription_en("");
+                setAreasOfUsage_tr([]);
+                setAreasOfUsage_en([]);
+                setTechnicalInfo_tr([]);
+                setTechnicalInfo_en([]);
+                setBgImage(null);
+                setImages(null);
+                setLink("");
+                setNewTechnicalTr(false);
+                setNewTechnicalEn(false);
+                setNewAreasTr(false);
+                setNewAreasEn(false);
+                setBtnSpinner(false);
+            })
+            .catch((e) => {
+                setErrorDialog(true);
+                setErrorDialogText(e);
+                setTimeout(() => {
+                    setErrorDialog(false);
+                }, 4000);
+                setBtnSpinner(false);
+            });
     };
 
     useLayoutEffect(() => {
@@ -859,6 +885,10 @@ export default function Products() {
             </div>
 
             {dialogState && <DeleteDialog />}
+            {successDialog && <DialogModal status="success" />}
+            {errorDialog && (
+                <DialogModal status="error" errorText={errorDialogText} />
+            )}
         </div>
     );
 }

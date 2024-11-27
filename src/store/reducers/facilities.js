@@ -18,7 +18,7 @@ export const facilitySlice = createSlice({
         builder.addCase(addEditFacility.fulfilled, (state, action) => {
             const data = action.payload;
             if (data.status) {
-                delete data.status;
+                //delete data.status;
                 if (data.add) {
                     delete data.add;
                     state.facilities.push(data);

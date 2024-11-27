@@ -18,7 +18,7 @@ export const minesSlice = createSlice({
         builder.addCase(addEditMine.fulfilled, (state, action) => {
             const data = action.payload;
             if (data.status) {
-                delete data.status;
+                //delete data.status;
                 if (data.add) {
                     delete data.add;
                     state.mines.push(data);
@@ -68,9 +68,17 @@ export const addEditMine = createAsyncThunk("/mines/add", async (data) => {
     return await axios
         .post("/mine", { data })
         .then((result) => {
-            return { ...data, ...result.data, add: !data.mineId };
+            console.log("addEditMine", result);
+            return {
+                ...data,
+                ...result.data,
+                add: !data.mineId,
+            };
         })
-        .catch((e) => console.log("error", e));
+        .catch((e) => {
+            console.log("error", e);
+            return { status: false, error: e };
+        });
 });
 
 export const deleteMine = createAsyncThunk("/mines/delete", async (mineId) => {

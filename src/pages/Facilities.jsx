@@ -33,6 +33,7 @@ import { MapContainer, TileLayer, Popup, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "/assets/marker-icon.png";
 import { Icon } from "leaflet";
+import DialogModal from "../components/DialogModal";
 const myIcon = new Icon({
     iconUrl: marker,
     iconSize: [25, 41],
@@ -60,6 +61,10 @@ export default function Facilities() {
     const [images, setImages] = useState(null);
 
     const [location, setLocation] = useState(null);
+
+    const [successDialog, setSuccessDialog] = useState(false);
+    const [errorDialog, setErrorDialog] = useState(false);
+    const [errorDialogText, setErrorDialogText] = useState("");
 
     const mapRef = useRef();
 
@@ -145,17 +150,38 @@ export default function Facilities() {
             bgImage,
             images,
         };
-        dispatch(addEditFacility(data)).then(({ payload }) => {
-            setOpenNewInput(false);
-            setSelectedMine(0);
-            setFacilityName_tr("");
-            setFacilityName_en("");
-            setDescription_tr("");
-            setDescription_en("");
-            setBgImage(null);
-            setImages(null);
-            setBtnSpinner(false);
-        });
+        dispatch(addEditFacility(data))
+            .then(({ payload }) => {
+                if (payload.status) {
+                    setSuccessDialog(true);
+                    setTimeout(() => {
+                        setSuccessDialog(false);
+                    }, 2000);
+                } else {
+                    setErrorDialog(true);
+                    setErrorDialogText(payload.error);
+                    setTimeout(() => {
+                        setErrorDialog(false);
+                    }, 4000);
+                }
+                setOpenNewInput(false);
+                setSelectedMine(0);
+                setFacilityName_tr("");
+                setFacilityName_en("");
+                setDescription_tr("");
+                setDescription_en("");
+                setBgImage(null);
+                setImages(null);
+                setBtnSpinner(false);
+            })
+            .catch((e) => {
+                setErrorDialog(true);
+                setErrorDialogText(e);
+                setTimeout(() => {
+                    setErrorDialog(false);
+                }, 4000);
+                setBtnSpinner(false);
+            });
     };
 
     const validation = () => {
@@ -445,6 +471,10 @@ export default function Facilities() {
             </div>
 
             {dialogState && <DeleteDialog />}
+            {successDialog && <DialogModal status="success" />}
+            {errorDialog && (
+                <DialogModal status="error" errorText={errorDialogText} />
+            )}
         </div>
     );
 }
